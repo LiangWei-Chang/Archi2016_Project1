@@ -9,7 +9,8 @@
 #define Binary2Assembly_h
 
 #include "Register.h"
+#include <vector>
 
-bool Binary2Assembly(int *Word, Register *reg);
+void Binary2Assembly(std::vector<int> Word, Register *reg, Register &PC);
 
 #endif
