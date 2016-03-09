@@ -15,6 +15,7 @@
 #include <vector>
 #include "Binary2Assembly.h"
 #include "Register.h"
+#include "Memory.h"
 
 using namespace std;
 
@@ -49,8 +50,8 @@ int main(){
 	Register reg[32], PC;
 	bool Halt = false;
 	bitset<8> bs;
-	map< int, vector<int> > Address;
-	map< int, vector<int> > Memory;
+	map< int,vector<int> > Address;
+	//map< int,vector<int> > Memory;
 	// Initialize register;
 	InitialReg(reg);
 	
@@ -104,7 +105,7 @@ int main(){
 		fin.get(ch);
 		bs = ch;
 		for(int j=0; j<8; j++)
-			Memory[i].push_back(bs[j]);
+			DataMemory::Memory[i].push_back(bs[j]);
 	}
 	cyclePrint(fout, Cycle, reg, PC);
 	while(!Halt){
