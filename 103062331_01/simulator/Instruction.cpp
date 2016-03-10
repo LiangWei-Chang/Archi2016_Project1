@@ -56,16 +56,14 @@ void R_format(string op, int rs, int rt, int rd){
 
 void R_format2(string op, int rt, int rd, int C){
 	if(op == "sll")	CPURegister::reg[rd].value = CPURegister::reg[rt].value << C;
-	else if(op == "srl") CPURegister::reg[rd].value = CPURegister::reg[rt].value >> C;
-	else if(op == "sra"){
-		string StrHex = CPURegister::reg[rd].Hex();
-		int SignBit = StrHex[2]-'0', Word[32];
-		int temp = CPURegister::reg[rt].value >> C;
+	else if(op == "srl"){
+		int Word[32], temp = CPURegister::reg[rt].value >> C;
 		bitset<32> bs = temp;
-		for(int i=31; i>(31-C); i--) bs[i] = SignBit;
+		for(int i=31; i>(31-C); i--) bs[i] = 0;
 		for(int i=31; i>=0; i--) Word[i] = bs[i];
 		CPURegister::reg[rd].value = Bin2Dec(Word, 32, true);
 	}
+	else if(op == "sra") CPURegister::reg[rd].value = CPURegister::reg[rt].value >> C;
 	CPURegister::PC.value += 4;
 }
 
