@@ -8,10 +8,11 @@
 
 #include "Binary2Assembly.h"
 #include "Instruction.h"
+#include "GlobalVar.h"
 #include <vector>
 using namespace std;
 
-void Binary2Assembly(vector<int> Word, Register *reg, Register &PC){
+void Binary2Assembly(vector<int> Word){
 	int opcode = 0, power = 1, rs = 0, rt = 0, rd = 0, shamt = 0, funct = 0, C = 0, next_addr;
 	// Calculate opcode
 	for(int i=0; i<6; i++){
@@ -59,107 +60,107 @@ void Binary2Assembly(vector<int> Word, Register *reg, Register &PC){
 		case 0:
 			switch (funct){
 				case 32:
-					R_format("add", rs, rt, rd, reg, PC);
+					R_format("add", rs, rt, rd);
 					break;
 				case 33:
-					R_format("addu", rs, rt, rd, reg, PC);
+					R_format("addu", rs, rt, rd);
 					break;
 				case 34:
-					R_format("sub", rs, rt, rd, reg, PC);
+					R_format("sub", rs, rt, rd);
 					break;
 				case 36:
-					R_format("and", rs, rt, rd, reg, PC);
+					R_format("and", rs, rt, rd);
 					break;
 				case 37:
-					R_format("or", rs, rt, rd, reg, PC);
+					R_format("or", rs, rt, rd);
 					break;
 				case 38:
-					R_format("xor", rs, rt, rd, reg, PC);
+					R_format("xor", rs, rt, rd);
 					break;
 				case 39:
-					R_format("nor", rs, rt, rd, reg, PC);
+					R_format("nor", rs, rt, rd);
 					break;
 				case 40:
-					R_format("nand", rs, rt, rd, reg, PC);
+					R_format("nand", rs, rt, rd);
 					break;
 				case 42:
-					R_format("slt", rs, rt, rd, reg, PC);
+					R_format("slt", rs, rt, rd);
 					break;
 				case 0:
-					R_format2("sll", rt, rd, C, reg, PC);
+					R_format2("sll", rt, rd, C);
 					break;
 				case 2:
-					R_format2("srl", rt, rd, C, reg, PC);
+					R_format2("srl", rt, rd, C);
 					break;
 				case 3:
-					R_format2("sra", rt, rd, C, reg, PC);
+					R_format2("sra", rt, rd, C);
 					break;
 				case 8:
-					R_format3("jr", rs, reg, PC);
+					R_format3("jr", rs);
 					break;
 			}
 			break;
 		case 8:
-			I_format("addi", rs, rt, C, reg, PC);
+			I_format("addi", rs, rt, C);
 			break;
 		case 9:
-			I_format("addiu", rs, rt, C, reg, PC);
+			I_format("addiu", rs, rt, C);
 			break;
 		case 35:
-			I_format("lw", rs, rt, C, reg, PC);
+			I_format("lw", rs, rt, C);
 			break;
 		case 33:
-			I_format("lh", rs, rt, C, reg, PC);
+			I_format("lh", rs, rt, C);
 			break;
 		case 37:
-			I_format("lhu", rs, rt, C, reg, PC);
+			I_format("lhu", rs, rt, C);
 			break;
 		case 32:
-			I_format("lb", rs, rt, C, reg, PC);
+			I_format("lb", rs, rt, C);
 			break;
 		case 36:
-			I_format("lbu", rs, rt, C, reg, PC);
+			I_format("lbu", rs, rt, C);
 			break;
 		case 43:
-			I_format("sw", rs, rt, C, reg, PC);
+			I_format("sw", rs, rt, C);
 			break;
 		case 41:
-			I_format("sh", rs, rt, C, reg, PC);
+			I_format("sh", rs, rt, C);
 			break;
 		case 40:
-			I_format("sb", rs, rt, C, reg, PC);
+			I_format("sb", rs, rt, C);
 			break;
 		case 15:
-			I_format2("lui", rt, C, reg, PC);
+			I_format2("lui", rt, C);
 			break;
 		case 12:
-			I_format("andi", rs, rt, C, reg, PC);
+			I_format("andi", rs, rt, C);
 			break;
 		case 13:
-			I_format("ori", rs, rt, C, reg, PC);
+			I_format("ori", rs, rt, C);
 			break;
 		case 14:
-			I_format("nori", rs, rt, C, reg, PC);
+			I_format("nori", rs, rt, C);
 			break;
 		case 10:
-			I_format("slti", rs, rt, C, reg, PC);
+			I_format("slti", rs, rt, C);
 			break;
 		case 4:
-			I_format("beq", rs, rt, C, reg, PC);
+			I_format("beq", rs, rt, C);
 			break;
 		case 5:
-			I_format("bne", rs, rt, C, reg, PC);
+			I_format("bne", rs, rt, C);
 			break;
 		case 7:
-			I_format3("bgtz", rs, C, reg, PC);
+			I_format3("bgtz", rs, C);
 			break;
 		case 2:
-			J_format("j", C, reg, PC);
+			J_format("j", C);
 			break;
 		case 3:
-			J_format("jal", C, reg, PC);
+			J_format("jal", C);
 			break;
 		case 63:
-			PC.value = 0xFFFF;
+			CPURegister::PC.value = 0xFFFF;
 	}
 }
