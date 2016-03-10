@@ -84,7 +84,7 @@ void I_format(string op, int rs, int rt, int C){
 		memset(Word, 0, sizeof(Word));
 		for(int i=4; i>0; i--)
 			for(int j=0; j<8; j++)
-				Word[i*8-1-j] = DataMemory::Memory[rs+C+(4-i)][7-j];
+				Word[i*8-1-j] = DataMemory::Memory[CPURegister::reg[rs].value+C+(4-i)][7-j];
 		CPURegister::reg[rt].value = Bin2Dec(Word, 32, true);
 	}
 	else if(op == "lh"){ 
@@ -92,7 +92,7 @@ void I_format(string op, int rs, int rt, int C){
 		memset(Word, 0, sizeof(Word));
 		for(int i=2; i>0; i--)
 			for(int j=0; j<8; j++)
-				Word[i*8-1-j] = DataMemory::Memory[rs+C+(2-i)][7-j];
+				Word[i*8-1-j] = DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)][7-j];
 		CPURegister::reg[rt].value = Bin2Dec(Word, 16, true);
 	} 
 	else if(op == "lhu"){ 
@@ -100,42 +100,47 @@ void I_format(string op, int rs, int rt, int C){
 		memset(Word, 0, sizeof(Word));
 		for(int i=2; i>0; i--)
 			for(int j=0; j<8; j++)
-				Word[i*8-1-j] = DataMemory::Memory[rs+C+(2-i)][7-j];
+				Word[i*8-1-j] = DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)][7-j];
 		CPURegister::reg[rt].value = Bin2Dec(Word, 16, false);
 	}
 	else if(op == "lb"){ 
 		int Word[32];
 		memset(Word, 0, sizeof(Word));
 		for(int i=0; i<8; i++)
-			Word[i] = DataMemory::Memory[rs+C][i];
+			Word[i] = DataMemory::Memory[CPURegister::reg[rs].value+C][i];
 		CPURegister::reg[rt].value = Bin2Dec(Word, 8, true);
 	}
 	else if(op == "lbu"){
 		int Word[32];
 		memset(Word, 0, sizeof(Word));
 		for(int i=0; i<8; i++)
-			Word[i] = DataMemory::Memory[rs+C][i];
+			Word[i] = DataMemory::Memory[CPURegister::reg[rs].value+C][i];
 		CPURegister::reg[rt].value = Bin2Dec(Word, 8, false);
 	}
 	else if(op == "sw"){
 		bitset<32> bs;
 		bs = CPURegister::reg[rt].value;
-		for(int i=4; i>0; i--)
-			for(int j=7; j>=0; j--)
-				DataMemory::Memory[rs+C+(4-i)][j] = bs[i*8-1-(7-j)];
+		for(int i=4; i>0; i--){
+			DataMemory::Memory[CPURegister::reg[rs].value+C+(4-i)].clear();
+			for(int j=0; j<8; j++)
+				DataMemory::Memory[CPURegister::reg[rs].value+C+(4-i)].push_back(bs[(i-1)*8+j]);
+		}
 	}	
 	else if(op == "sh"){ 
 		bitset<32> bs;
 		bs = CPURegister::reg[rt].value;
-		for(int i=2; i>0; i--)
-			for(int j=7; j>=0; j--)
-				DataMemory::Memory[rs+C+(2-i)][j] = bs[i*8-1-(7-j)];
+		for(int i=2; i>0; i--){
+			DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)].clear();
+			for(int j=0; j<8; j++)
+				DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)].push_back(bs[(i-1)*8+j]);
+		}
 	}
 	else if(op == "sb"){
 		bitset<32> bs;
 		bs = CPURegister::reg[rt].value;
-		for(int i=7; i>=0; i--)
-			DataMemory::Memory[rs+C][i] = bs[i];
+		DataMemory::Memory[CPURegister::reg[rs].value+C].clear();
+		for(int j=0; j<8; j++)
+				DataMemory::Memory[CPURegister::reg[rs].value+C].push_back(bs[j]);
 	}
 	else if(op == "andi"){
 		unsigned int C2 = C;
@@ -174,5 +179,15 @@ void I_format3(string op, int rs, int C){
 }
 
 void J_format(string op, unsigned int C){
-	// Need Modified
+	if(op == "jal") CPURegister::reg[31].value = CPURegister::PC.value + 4;	 
+	bitset<32> bs1, bs2;
+	int Word[32];
+	memset(Word, 0, sizeof(Word));
+	CPURegister::PC.value += 4;
+	C = C << 2;
+	bs1 = CPURegister::PC.value;
+	bs2 = C;
+	for(int i=31; i>27; i--) Word[i] = bs1[i];
+	for(int i=27; i>1; i--) Word[i] = bs2[i];
+	CPURegister::PC.value = Bin2Dec(Word, 32, false);
 }

@@ -70,10 +70,10 @@ int main(){
 	// Initialize register;
 	InitialReg();
 	
-	ofstream fout("../testcase/snapshot.rpt", ios::out);
+	ofstream fout("../testcase/func/snapshot.rpt", ios::out);
 	
 	// Read iimage.bin
-	ifstream fin("../testcase/iimage.bin", ios::in | ios::binary);
+	ifstream fin("../testcase/func/iimage.bin", ios::in | ios::binary);
 	if(!fin) cout << "Error to load 'iimage.bin'!\n";
 	while(!fin.eof()){
 		fin.get(ch);
@@ -99,7 +99,7 @@ int main(){
 	fin.close();
 	
 	// Read dimage.bin
-	fin.open("../testcase/dimage.bin", ios::in | ios::binary);
+	fin.open("../testcase/func/dimage.bin", ios::in | ios::binary);
 	// Read $sp
 	for(int i=4; i>0; i--){
 		fin.get(ch);
