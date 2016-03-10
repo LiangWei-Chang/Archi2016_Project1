@@ -33,11 +33,26 @@ void cyclePrint(ofstream &fout, int &Cycle){
 	fout << "PC: " << CPURegister::PC.Hex() << endl << endl << endl;
 }
 
-int Bin2Dec(int *Word){ // **Consider negative num**
-	int sum = 0, power = 1;
-	for(int i=0; i<32; i++){
-		sum += (Word[i] * power);
-		power *= 2;
+unsigned int Bin2Dec(int *Word){ // **Consider negative num**
+	int sum = 0, power = 1, neg[31];
+	if(Word[31]==1){
+		for(int i=0; i<32; i++)
+			neg[i] = !Word[i];
+		int carry = 1, temp;
+		for(int i=0; i<32; i++){
+			temp = (neg[i]+carry) % 2;
+			carry = (neg[i]+carry) / 2;
+			neg[i] = temp;
+			sum += (neg[i] * power);
+			power *= 2;
+		}
+		sum *= (-1);
+	}
+	else{
+		for(int i=0; i<32; i++){
+			sum += (Word[i] * power);
+			power *= 2;
+		}
 	}
 	return sum;
 }

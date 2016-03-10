@@ -18,6 +18,6 @@ void R_format3(string op, int rs);
 void I_format(string op, int rs, int rt, int C);
 void I_format2(string op, int rt, int C);
 void I_format3(string op, int rs, int C);
-void J_format(string op, int C);
+void J_format(string op, unsigned int C);
 
 #endif
