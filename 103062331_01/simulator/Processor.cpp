@@ -57,23 +57,19 @@ unsigned int Bin2Dec(int *Word){ // **Consider negative num**
 	return sum;
 }
 
-// reg[33] represent PC;
-
 int main(){
 	char ch;
 	int Word[32], bytes = 4, Cycle = 0, idx = -2, next_addr;
-	//Register reg[32], PC;
-	bool Halt = false;
 	bitset<8> bs;
 	map< int,vector<int> > Address;
-	//map< int,vector<int> > Memory;
 	// Initialize register;
 	InitialReg();
 	
-	ofstream fout("../testcase/func/snapshot.rpt", ios::out);
+	ofstream fout("../testcase/error2/snapshot.rpt", ios::out);
+	ofstream Errorout("../testcase/error2/error_dump.rpt", ios::out);
 	
 	// Read iimage.bin
-	ifstream fin("../testcase/func/iimage.bin", ios::in | ios::binary);
+	ifstream fin("../testcase/error2/iimage.bin", ios::in | ios::binary);
 	if(!fin) cout << "Error to load 'iimage.bin'!\n";
 	while(!fin.eof()){
 		fin.get(ch);
@@ -99,7 +95,7 @@ int main(){
 	fin.close();
 	
 	// Read dimage.bin
-	fin.open("../testcase/func/dimage.bin", ios::in | ios::binary);
+	fin.open("../testcase/error2/dimage.bin", ios::in | ios::binary);
 	// Read $sp
 	for(int i=4; i>0; i--){
 		fin.get(ch);
@@ -123,13 +119,41 @@ int main(){
 			DataMemory::Memory[i].push_back(bs[j]);
 	}
 	cyclePrint(fout, Cycle);
-	while(!Halt){
+	Terminal::Halt = false;
+	Terminal::error_type = 0;
+	
+	//Start Instructions
+	while(!Terminal::Halt){
 		Binary2Assembly(Address[CPURegister::PC.value]);
 		if(CPURegister::PC.value==0xFFFF){
-			Halt = true;
+			Terminal::Halt = true;
 			return 0;
+		}
+		if(Terminal::error_type!=0){
+			switch(Terminal::error_type){
+				case 1:
+					Errorout << "In cycle " << Cycle << ": Write $0 Error" << endl;
+					Terminal::error_type = 0;
+					break;
+				case 2:
+					Errorout << "In cycle " << Cycle << ": Number Overflow" << endl;
+					Terminal::error_type = 0;
+					break;
+				case 3:
+					Errorout << "In cycle " << Cycle << ": Address Overflow" << endl;
+					Terminal::Halt = true;
+					break;
+				case 4:
+					Errorout << "In cycle " << Cycle << ": Misalignment Error" << endl;
+					Terminal::Halt = true;
+					break;
+				default: break;
+			}
+			if(Terminal::error_type==3 || Terminal::error_type==4) return 0;
 		}
 		cyclePrint(fout, Cycle);
 	}
+	fout.close();
+	Errorout.close();
 	return 0;
 }

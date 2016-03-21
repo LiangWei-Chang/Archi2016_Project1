@@ -23,4 +23,10 @@ class CPURegister{
 public:
 	static Register reg[32], PC;
 };
+
+class Terminal{
+public:
+	static bool Halt;
+	static int error_type;
+};
 #endif
