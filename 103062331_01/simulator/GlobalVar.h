@@ -27,6 +27,6 @@ public:
 class Terminal{
 public:
 	static bool Halt;
-	static int error_type;
+	static bool error_type[4];
 };
 #endif

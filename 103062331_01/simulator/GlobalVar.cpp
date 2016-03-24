@@ -12,4 +12,4 @@ map< int,vector<int> > DataMemory::Memory;
 Register CPURegister::reg[32];
 Register CPURegister::PC;
 bool Terminal::Halt;
-int Terminal::error_type;
+bool Terminal::error_type[4];

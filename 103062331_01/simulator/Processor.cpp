@@ -19,6 +19,8 @@
 
 using namespace std;
 
+string Message[4] = {": Write $0 Error", ": Number Overflow", ": Address Overflow", ": Misalignment Error"};
+
 void InitialReg(){
 	for(int i=0; i<32; i++)
 		CPURegister::reg[i].value = 0;
@@ -65,11 +67,11 @@ int main(){
 	// Initialize register;
 	InitialReg();
 	
-	ofstream fout("../testcase/error2/snapshot.rpt", ios::out);
-	ofstream Errorout("../testcase/error2/error_dump.rpt", ios::out);
+	ofstream fout("snapshot.rpt", ios::out);
+	ofstream Errorout("error_dump.rpt", ios::out);
 	
 	// Read iimage.bin
-	ifstream fin("../testcase/error2/iimage.bin", ios::in | ios::binary);
+	ifstream fin("iimage.bin", ios::in | ios::binary);
 	if(!fin) cout << "Error to load 'iimage.bin'!\n";
 	while(!fin.eof()){
 		fin.get(ch);
@@ -95,7 +97,7 @@ int main(){
 	fin.close();
 	
 	// Read dimage.bin
-	fin.open("../testcase/error2/dimage.bin", ios::in | ios::binary);
+	fin.open("dimage.bin", ios::in | ios::binary);
 	// Read $sp
 	for(int i=4; i>0; i--){
 		fin.get(ch);
@@ -120,37 +122,20 @@ int main(){
 	}
 	cyclePrint(fout, Cycle);
 	Terminal::Halt = false;
-	Terminal::error_type = 0;
 	
 	//Start Instructions
 	while(!Terminal::Halt){
+		for(int i=0; i<4; i++) Terminal::error_type[i] = false;
 		Binary2Assembly(Address[CPURegister::PC.value]);
 		if(CPURegister::PC.value==0xFFFF){
 			Terminal::Halt = true;
 			return 0;
 		}
-		if(Terminal::error_type!=0){
-			switch(Terminal::error_type){
-				case 1:
-					Errorout << "In cycle " << Cycle << ": Write $0 Error" << endl;
-					Terminal::error_type = 0;
-					break;
-				case 2:
-					Errorout << "In cycle " << Cycle << ": Number Overflow" << endl;
-					Terminal::error_type = 0;
-					break;
-				case 3:
-					Errorout << "In cycle " << Cycle << ": Address Overflow" << endl;
-					Terminal::Halt = true;
-					break;
-				case 4:
-					Errorout << "In cycle " << Cycle << ": Misalignment Error" << endl;
-					Terminal::Halt = true;
-					break;
-				default: break;
-			}
-			if(Terminal::error_type==3 || Terminal::error_type==4) return 0;
+		for(int i=0; i<4; i++){
+			if(Terminal::error_type[i]==true)
+				Errorout << "In cycle " << Cycle << Message[i] << endl;
 		}
+		if(Terminal::Halt) return 0;
 		cyclePrint(fout, Cycle);
 	}
 	fout.close();
