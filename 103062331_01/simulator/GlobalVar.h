@@ -16,7 +16,7 @@ using namespace std;
 
 class DataMemory{
 public: 
-	static map< int,vector<int> > Memory;
+	static map< int,char > Memory;
 };
 
 class CPURegister{

@@ -15,32 +15,6 @@
 #include <iostream>
 using namespace std;
 
-unsigned int Bin2Dec(int *Word, int Bits, bool Signed){ // **Consider negative num**
-	int sum = 0, power = 1, neg[32];
-	memset(neg, 0, sizeof(neg));
-	if(Signed){
-		if(Word[Bits-1]==1){
-			for(int i=0; i<Bits; i++)
-				neg[i] = !Word[i];
-			int carry = 1, temp;
-			for(int i=0; i<Bits; i++){
-				temp = (neg[i]+carry) % 2;
-				carry = (neg[i]+carry) / 2;
-				neg[i] = temp;
-				sum += (neg[i] * power);
-				power *= 2;
-			}
-			sum *= (-1);
-			return sum;
-		}
-	}
-	for(int i=0; i<Bits; i++){
-		sum += (Word[i] * power);
-		power *= 2;
-	}
-	return sum;
-}
-
 void NumberOverflowDetect(int temp, int A, int B){
 	bitset<32> bs1 = temp, bs2 = A, bs3 = B;
 	if(bs2[31]==bs3[31] && bs2[31]!=bs1[31])
@@ -95,11 +69,7 @@ void R_format2(string op, int rt, int rd, int C){
 			CPURegister::PC.value += 4;
 			return;
 		}
-		int Word[32], temp = CPURegister::reg[rt].value >> C;
-		bitset<32> bs = temp;
-		for(int i=31; i>(31-C); i--) bs[i] = 0;
-		for(int i=31; i>=0; i--) Word[i] = bs[i];
-		CPURegister::reg[rd].value = Bin2Dec(Word, 32, true);
+		CPURegister::reg[rd].value = (unsigned int)CPURegister::reg[rt].value >> C;
 	}
 	else if(op == "sra"){
 		if(rd==0){
@@ -132,96 +102,68 @@ void I_format(string op, int rs, int rt, int C){
 		CPURegister::reg[rt].value = CPURegister::reg[rs].value + C2;
 	}
 	else if(op == "lw"){
-		int Word[32];
-		memset(Word, 0, sizeof(Word));
 		NumberOverflowDetect(CPURegister::reg[rs].value+C+3, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C+3);
 		DataMisaligned(CPURegister::reg[rs].value+C, 4);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
-		for(int i=4; i>0; i--)
-			for(int j=0; j<8; j++)
-				Word[i*8-1-j] = DataMemory::Memory[CPURegister::reg[rs].value+C+(4-i)][7-j];
-		CPURegister::reg[rt].value = Bin2Dec(Word, 32, true);
+		int Word = 0;
+		for(int i=0; i<4; i++)
+			Word = (Word << 8) | (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C+i];
+		CPURegister::reg[rt].value = Word;
 	}
 	else if(op == "lh"){ 
-		int Word[32];
-		memset(Word, 0, sizeof(Word));
 		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
-		for(int i=2; i>0; i--)
-			for(int j=0; j<8; j++)
-				Word[i*8-1-j] = DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)][7-j];
-		CPURegister::reg[rt].value = Bin2Dec(Word, 16, true);
+		int Word = DataMemory::Memory[CPURegister::reg[rs].value+C];
+		for(int i=1; i<2; i++)
+			Word = (Word << 8) | (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C+i];
+		CPURegister::reg[rt].value = Word;
 	} 
 	else if(op == "lhu"){ 
-		int Word[32];
-		memset(Word, 0, sizeof(Word));
 		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
-		for(int i=2; i>0; i--)
-			for(int j=0; j<8; j++)
-				Word[i*8-1-j] = DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)][7-j];
-		CPURegister::reg[rt].value = Bin2Dec(Word, 16, false);
+		int Word = 0;
+		for(int i=0; i<2; i++)
+			Word = (Word << 8) | (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C+i];
+		CPURegister::reg[rt].value = Word;
 	}
 	else if(op == "lb"){ 
-		int Word[32];
-		memset(Word, 0, sizeof(Word));
 		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C);
 		if(Terminal::error_type[2]) return;
-		for(int i=0; i<8; i++)
-			Word[i] = DataMemory::Memory[CPURegister::reg[rs].value+C][i];
-		CPURegister::reg[rt].value = Bin2Dec(Word, 8, true);
+		CPURegister::reg[rt].value = DataMemory::Memory[CPURegister::reg[rs].value+C];
 	}
 	else if(op == "lbu"){
-		int Word[32];
-		memset(Word, 0, sizeof(Word));
 		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C);
 		if(Terminal::error_type[2]) return;
-		for(int i=0; i<8; i++)
-			Word[i] = DataMemory::Memory[CPURegister::reg[rs].value+C][i];
-		CPURegister::reg[rt].value = Bin2Dec(Word, 8, false);
+		CPURegister::reg[rt].value = (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C];
 	}
 	else if(op == "sw"){
-		bitset<32> bs;
-		bs = CPURegister::reg[rt].value;
 		NumberOverflowDetect(CPURegister::reg[rs].value+C+3, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C+3);
 		DataMisaligned(CPURegister::reg[rs].value+C, 4);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
-		for(int i=4; i>0; i--){
-			DataMemory::Memory[CPURegister::reg[rs].value+C+(4-i)].clear();
-			for(int j=0; j<8; j++)
-				DataMemory::Memory[CPURegister::reg[rs].value+C+(4-i)].push_back(bs[(i-1)*8+j]);
-		}
+		for(int i=0; i<4; i++)
+			DataMemory::Memory[CPURegister::reg[rs].value+C+i] = (char)(CPURegister::reg[rt].value >> (8*(3-i)));
 	}	
-	else if(op == "sh"){ 
-		bitset<32> bs;
-		bs = CPURegister::reg[rt].value;
+	else if(op == "sh"){
 		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
-		for(int i=2; i>0; i--){
-			DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)].clear();
-			for(int j=0; j<8; j++)
-				DataMemory::Memory[CPURegister::reg[rs].value+C+(2-i)].push_back(bs[(i-1)*8+j]);
-		}
+		for(int i=0; i<2; i++)
+			DataMemory::Memory[CPURegister::reg[rs].value+C+i] = (char)(CPURegister::reg[rt].value >> (8*(1-i)));
 	}
 	else if(op == "sb"){
-		bitset<32> bs;
-		bs = CPURegister::reg[rt].value;
 		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
 		AddressOverflowDetect(CPURegister::reg[rs].value+C);
 		if(Terminal::error_type[2]) return;
-		DataMemory::Memory[CPURegister::reg[rs].value+C].clear();
-		for(int j=0; j<8; j++)
-				DataMemory::Memory[CPURegister::reg[rs].value+C].push_back(bs[j]);
+		DataMemory::Memory[CPURegister::reg[rs].value+C] = (char)CPURegister::reg[rt].value;
 	}
 	else if(op == "andi"){
 		unsigned int C2 = C;
@@ -269,14 +211,7 @@ void I_format3(string op, int rs, int C){
 
 void J_format(string op, unsigned int C){
 	if(op == "jal") CPURegister::reg[31].value = CPURegister::PC.value + 4;	 
-	bitset<32> bs1, bs2;
-	int Word[32];
-	memset(Word, 0, sizeof(Word));
-	CPURegister::PC.value += 4;
-	C = C << 2;
-	bs1 = CPURegister::PC.value;
-	bs2 = C;
-	for(int i=31; i>27; i--) Word[i] = bs1[i];
-	for(int i=27; i>1; i--) Word[i] = bs2[i];
-	CPURegister::PC.value = Bin2Dec(Word, 32, false);
+	int Word = ((CPURegister::PC.value+4) >> 28) << 28;
+	Word += (C << 2);;
+	CPURegister::PC.value = Word;
 }

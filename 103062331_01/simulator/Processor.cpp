@@ -61,28 +61,25 @@ unsigned int Bin2Dec(int *Word){ // **Consider negative num**
 
 int main(){
 	char ch;
-	int Word[32], bytes = 4, Cycle = 0, idx = -2, next_addr;
-	bitset<8> bs;
-	map< int,vector<int> > Address;
+	int Word = 0, bytes = 4, Cycle = 0, idx = -2;
+	map< int,int > Address;
 	// Initialize register;
 	InitialReg();
 	
 	ofstream fout("snapshot.rpt", ios::out);
 	ofstream Errorout("error_dump.rpt", ios::out);
-	
+	bitset<32> bs;
 	// Read iimage.bin
 	ifstream fin("iimage.bin", ios::in | ios::binary);
 	if(!fin) cout << "Error to load 'iimage.bin'!\n";
 	while(!fin.eof()){
 		fin.get(ch);
-		bs = ch;
-		for(int i=0; i<8; i++)
-			Word[bytes*8-1-i] = bs[7-i];
+		Word = (Word << 8) | (unsigned char)ch;
 		bytes--;
 		if(bytes==0){
 			bytes = 4;
 			if(idx==-2){
-				CPURegister::PC.value = Bin2Dec(Word);
+				CPURegister::PC.value = Word;
 				idx++;
 				continue;
 			}
@@ -90,7 +87,7 @@ int main(){
 				idx++;
 				continue;
 			}
-			for(int i=0; i<32; i++)	Address[CPURegister::PC.value+idx*4].push_back(Word[i]);
+			Address[CPURegister::PC.value+idx*4] = Word;
 			idx++;
 		}
 	}
@@ -101,24 +98,18 @@ int main(){
 	// Read $sp
 	for(int i=4; i>0; i--){
 		fin.get(ch);
-		bs = ch;
-		for(int j=0; j<8; j++)
-			Word[i*8-1-j] = bs[7-j];
+		Word = (Word << 8) + ch;
 	}
-	CPURegister::reg[29].value = Bin2Dec(Word);
+	CPURegister::reg[29].value = Word;
 	// Numbers of words
 	for(int i=4; i>0; i--){
 		fin.get(ch);
-		bs = ch;
-		for(int j=0; j<8; j++)
-			Word[i*8-1-j] = bs[7-j];
+		Word = (Word << 8) + ch;
 	}
-	int NumbersOfWords = Bin2Dec(Word);
+	int NumbersOfWords = Word;
 	for(int i=0; i<NumbersOfWords*4; i++){
 		fin.get(ch);
-		bs = ch;
-		for(int j=0; j<8; j++)
-			DataMemory::Memory[i].push_back(bs[j]);
+		DataMemory::Memory[i] = ch;
 	}
 	cyclePrint(fout, Cycle);
 	Terminal::Halt = false;

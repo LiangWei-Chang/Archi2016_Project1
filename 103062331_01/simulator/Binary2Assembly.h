@@ -11,6 +11,6 @@
 #include "Register.h"
 #include <vector>
 
-void Binary2Assembly(std::vector<int> Word);
+void Binary2Assembly(int Word);
 
 #endif

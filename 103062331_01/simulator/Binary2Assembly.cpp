@@ -10,71 +10,30 @@
 #include "Instruction.h"
 #include "GlobalVar.h"
 #include <vector>
+#include <iostream>
 using namespace std;
 
-unsigned int CalC(vector<int> Word, bool Signed){
-	int sum = 0, power = 1, neg[16];
-	if(Signed){
-		if(Word[15]==1){
-			for(int i=0; i<16; i++)
-				neg[i] = !Word[i];
-			int carry = 1, temp;
-			for(int i=0; i<16; i++){
-				temp = (neg[i]+carry) % 2;
-				carry = (neg[i]+carry) / 2;
-				neg[i] = temp;
-				sum += (neg[i] * power);
-				power *= 2;
-			}
-			sum *= (-1);
-			return sum;
-		}
-	}
-	for(int i=0; i<16; i++){
-		sum += (Word[i] * power);
-		power *= 2;
-	}
-	return sum;
+int CalC(int Word, bool Signed){
+	if(Signed)
+		return (Word << 16) >> 16;
+	return (unsigned)(Word << 16) >> 16;
 };
 
-void Binary2Assembly(vector<int> Word){
-	int opcode = 0, power = 1, rs = 0, rt = 0, rd = 0, shamt = 0, funct = 0, next_addr;
+void Binary2Assembly(int Word){
+	int opcode = 0, power = 1, rs = 0, rt = 0, rd = 0, shamt = 0, funct = 0;
 	// Calculate opcode
-	for(int i=0; i<6; i++){
-		opcode += (Word[26+i]*power);
-		power *= 2;
-	}
+	opcode = ((unsigned int) Word) >> 26;
 	// Calculate rs
-	power = 1;
-	for(int i=0; i<5; i++){
-		rs += (Word[21+i]*power);
-		power *= 2;
-	}
+	rs = ((unsigned int) (Word << 6)) >> 27;
 	// Calculate rt
-	power = 1;
-	for(int i=0; i<5; i++){
-		rt += (Word[16+i]*power);
-		power *= 2;
-	}
+	rt = ((unsigned int) (Word << 11)) >> 27;
 	// Calculate rd
-	power = 1;
-	for(int i=0; i<5; i++){
-		rd += (Word[11+i]*power);
-		power *= 2;
-	}
+	rd = ((unsigned int) (Word << 16)) >> 27;
 	// Calculate shamt
-	power = 1;
-	for(int i=0; i<5; i++){
-		shamt += (Word[6+i]*power);
-		power *= 2;
-	}
+	shamt = ((unsigned int) (Word << 21)) >> 27;
 	// Calculate funct
-	power = 1;
-	for(int i=0; i<6; i++){
-		funct += (Word[i]*power);
-		power *= 2;
-	}
-
+	funct = ((unsigned int) (Word << 26)) >> 26;
+	
 	// Transfer to Assembly
 	switch (opcode){
 		case 0:
@@ -107,13 +66,13 @@ void Binary2Assembly(vector<int> Word){
 					R_format("slt", rs, rt, rd);
 					break;
 				case 0:
-					R_format2("sll", rt, rd, CalC(Word, true));
+					R_format2("sll", rt, rd, shamt);
 					break;
 				case 2:
-					R_format2("srl", rt, rd, CalC(Word, true));
+					R_format2("srl", rt, rd, shamt);
 					break;
 				case 3:
-					R_format2("sra", rt, rd, CalC(Word, true));
+					R_format2("sra", rt, rd, shamt);
 					break;
 				case 8:
 					R_format3("jr", rs);
