@@ -71,7 +71,10 @@ int main(){
 	bitset<32> bs;
 	// Read iimage.bin
 	ifstream fin("iimage.bin", ios::in | ios::binary);
-	if(!fin) cout << "Error to load 'iimage.bin'!\n";
+	if(!fin){
+		cout << "Error to load 'iimage.bin'!\n";
+		return 0;
+	}
 	while(!fin.eof()){
 		fin.get(ch);
 		Word = (Word << 8) | (unsigned char)ch;
