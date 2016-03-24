@@ -134,8 +134,8 @@ void I_format(string op, int rs, int rt, int C){
 	else if(op == "lw"){
 		int Word[32];
 		memset(Word, 0, sizeof(Word));
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+4, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+4);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C+3, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C+3);
 		DataMisaligned(CPURegister::reg[rs].value+C, 4);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=4; i>0; i--)
@@ -146,8 +146,8 @@ void I_format(string op, int rs, int rt, int C){
 	else if(op == "lh"){ 
 		int Word[32];
 		memset(Word, 0, sizeof(Word));
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+2, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+2);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=2; i>0; i--)
@@ -158,8 +158,8 @@ void I_format(string op, int rs, int rt, int C){
 	else if(op == "lhu"){ 
 		int Word[32];
 		memset(Word, 0, sizeof(Word));
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+2, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+2);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=2; i>0; i--)
@@ -190,8 +190,8 @@ void I_format(string op, int rs, int rt, int C){
 	else if(op == "sw"){
 		bitset<32> bs;
 		bs = CPURegister::reg[rt].value;
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+4, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+4);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C+3, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C+3);
 		DataMisaligned(CPURegister::reg[rs].value+C, 4);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=4; i>0; i--){
@@ -203,8 +203,8 @@ void I_format(string op, int rs, int rt, int C){
 	else if(op == "sh"){ 
 		bitset<32> bs;
 		bs = CPURegister::reg[rt].value;
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+2, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+2);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=2; i>0; i--){
