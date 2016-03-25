@@ -21,6 +21,7 @@ int CalC(int Word, bool Signed){
 
 void Binary2Assembly(int Word){
 	int opcode = 0, power = 1, rs = 0, rt = 0, rd = 0, shamt = 0, funct = 0;
+	unsigned int C = 0;
 	// Calculate opcode
 	opcode = ((unsigned int) Word) >> 26;
 	// Calculate rs
@@ -134,14 +135,15 @@ void Binary2Assembly(int Word){
 			I_format3("bgtz", rs, CalC(Word, true));
 			break;
 		case 2:
-			unsigned int C = (unsigned)(Word << 6) >> 6;
+			C = (unsigned)(Word << 6) >> 6;
 			J_format("j", C);
 			break;
 		case 3:
-			unsigned int C = (unsigned)(Word << 6) >> 6;
+			C = (unsigned)(Word << 6) >> 6;
 			J_format("jal", C);
 			break;
 		case 63:
 			CPURegister::PC.value = 0xFFFF;
+			break;
 	}
 }
