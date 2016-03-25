@@ -101,13 +101,13 @@ int main(){
 	// Read $sp
 	for(int i=4; i>0; i--){
 		fin.get(ch);
-		Word = (Word << 8) + ch;
+		Word = (Word << 8) + (unsigned char)ch;
 	}
 	CPURegister::reg[29].value = Word;
 	// Numbers of words
 	for(int i=4; i>0; i--){
 		fin.get(ch);
-		Word = (Word << 8) + ch;
+		Word = (Word << 8) + (unsigned char)ch;
 	}
 	int NumbersOfWords = Word;
 	for(int i=0; i<NumbersOfWords*4; i++){
@@ -121,15 +121,12 @@ int main(){
 	while(!Terminal::Halt){
 		for(int i=0; i<4; i++) Terminal::error_type[i] = false;
 		Binary2Assembly(Address[CPURegister::PC.value]);
-		if(CPURegister::PC.value==0xFFFF){
-			Terminal::Halt = true;
-			return 0;
-		}
 		for(int i=0; i<4; i++){
 			if(Terminal::error_type[i]==true)
 				Errorout << "In cycle " << Cycle << Message[i] << endl;
 		}
-		if(Terminal::Halt) return 0;
+		if(Terminal::Halt==true)
+			break;
 		cyclePrint(fout, Cycle);
 	}
 	fout.close();

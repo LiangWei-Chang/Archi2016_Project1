@@ -34,7 +34,7 @@ void Binary2Assembly(int Word){
 	shamt = ((unsigned int) (Word << 21)) >> 27;
 	// Calculate funct
 	funct = ((unsigned int) (Word << 26)) >> 26;
-	
+
 	// Transfer to Assembly
 	switch (opcode){
 		case 0:
@@ -143,7 +143,7 @@ void Binary2Assembly(int Word){
 			J_format("jal", C);
 			break;
 		case 63:
-			CPURegister::PC.value = 0xFFFF;
+			Terminal::Halt = true;
 			break;
 	}
 }

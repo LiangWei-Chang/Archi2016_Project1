@@ -21,8 +21,8 @@ void NumberOverflowDetect(int temp, int A, int B){
 		Terminal::error_type[1] = true;
 }
 
-void AddressOverflowDetect(int K){
-	if(K >= 1024 || K < 0){
+void AddressOverflowDetect(int K, int bytes){
+	if(K < 0 || K >= 1024 || K+bytes >= 1024 || K+bytes < 0){
 		Terminal::error_type[2] = true;
 		Terminal::Halt = true;
 	}
@@ -39,30 +39,59 @@ void R_format(string op, int rs, int rt, int rd){
 	if(rd==0){
 		Terminal::error_type[0] = true;
 		CPURegister::PC.value += 4;
-		return;
 	}
 	if(op == "add"){
 		int temp = CPURegister::reg[rs].value + CPURegister::reg[rt].value;
 		NumberOverflowDetect(temp, CPURegister::reg[rs].value, CPURegister::reg[rt].value);
+		if(Terminal::error_type[0]) return;
 		CPURegister::reg[rd].value = temp;
 	}
-	else if(op == "addu") CPURegister::reg[rd].value = CPURegister::reg[rs].value + CPURegister::reg[rt].value;
+	else if(op == "addu"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = CPURegister::reg[rs].value + CPURegister::reg[rt].value;
+	}
 	else if(op == "sub"){
 		int temp = CPURegister::reg[rs].value - CPURegister::reg[rt].value;
-		NumberOverflowDetect(temp, CPURegister::reg[rs].value, CPURegister::reg[rt].value);
+		NumberOverflowDetect(temp, CPURegister::reg[rs].value, (~CPURegister::reg[rt].value)+1);
+		if(Terminal::error_type[0]) return;
 		CPURegister::reg[rd].value = temp;
 	}
-	else if(op == "and") CPURegister::reg[rd].value = CPURegister::reg[rs].value & CPURegister::reg[rt].value;
-	else if(op == "or")	CPURegister::reg[rd].value = CPURegister::reg[rs].value | CPURegister::reg[rt].value;
-	else if(op == "xor") CPURegister::reg[rd].value = CPURegister::reg[rs].value ^ CPURegister::reg[rt].value;
-	else if(op == "nor")	CPURegister::reg[rd].value = ~(CPURegister::reg[rs].value | CPURegister::reg[rt].value);
-	else if(op == "nand") CPURegister::reg[rd].value = ~(CPURegister::reg[rs].value & CPURegister::reg[rt].value);
-	else if(op == "slt") CPURegister::reg[rd].value = (CPURegister::reg[rs].value < CPURegister::reg[rt].value);
+	else if(op == "and"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = CPURegister::reg[rs].value & CPURegister::reg[rt].value;
+	}
+	else if(op == "or"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = CPURegister::reg[rs].value | CPURegister::reg[rt].value;
+	}
+	else if(op == "xor"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = CPURegister::reg[rs].value ^ CPURegister::reg[rt].value;
+	}
+	else if(op == "nor"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = ~(CPURegister::reg[rs].value | CPURegister::reg[rt].value);
+	}
+	else if(op == "nand"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = ~(CPURegister::reg[rs].value & CPURegister::reg[rt].value);
+	}
+	else if(op == "slt"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rd].value = (CPURegister::reg[rs].value < CPURegister::reg[rt].value);
+	}
 	CPURegister::PC.value += 4;
 }
 
 void R_format2(string op, int rt, int rd, int C){
-	if(op == "sll")	CPURegister::reg[rd].value = CPURegister::reg[rt].value << C;
+	if(op == "sll"){
+		if(rd==0){
+			if(rt!=0 || C!=0) Terminal::error_type[0] = true;
+			CPURegister::PC.value += 4;
+			return;
+		}
+		CPURegister::reg[rd].value = CPURegister::reg[rt].value << C;
+	}
 	else if(op == "srl"){
 		if(rd==0){
 			Terminal::error_type[0] = true;
@@ -90,42 +119,43 @@ void I_format(string op, int rs, int rt, int C){
 	if(rt==0 && op!="sw" && op!="sh" && op!="sb" && op!="beq" && op!="bne"){
 		Terminal::error_type[0] = true;
 		CPURegister::PC.value += 4;
-		return;
 	}
 	if(op == "addi"){
 		int temp = CPURegister::reg[rs].value + C;
 		NumberOverflowDetect(temp, CPURegister::reg[rs].value, C);
+		if(Terminal::error_type[0]) return;
 		CPURegister::reg[rt].value = temp;
 	}
 	else if(op == "addiu"){
 		unsigned int C2 = C;
+		if(Terminal::error_type[0]) return;
 		CPURegister::reg[rt].value = CPURegister::reg[rs].value + C2;
 	}
 	else if(op == "lw"){
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+3, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+3);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 3);
 		DataMisaligned(CPURegister::reg[rs].value+C, 4);
-		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
+		if(Terminal::error_type[0] || Terminal::error_type[2] || Terminal::error_type[3]) return;
 		int Word = 0;
 		for(int i=0; i<4; i++)
 			Word = (Word << 8) | (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C+i];
 		CPURegister::reg[rt].value = Word;
 	}
 	else if(op == "lh"){ 
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
-		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
+		if(Terminal::error_type[0] || Terminal::error_type[2] || Terminal::error_type[3]) return;
 		int Word = DataMemory::Memory[CPURegister::reg[rs].value+C];
 		for(int i=1; i<2; i++)
 			Word = (Word << 8) | (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C+i];
 		CPURegister::reg[rt].value = Word;
 	} 
 	else if(op == "lhu"){ 
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
-		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
+		if(Terminal::error_type[0] || Terminal::error_type[2] || Terminal::error_type[3]) return;
 		int Word = 0;
 		for(int i=0; i<2; i++)
 			Word = (Word << 8) | (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C+i];
@@ -133,27 +163,27 @@ void I_format(string op, int rs, int rt, int C){
 	}
 	else if(op == "lb"){ 
 		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C);
-		if(Terminal::error_type[2]) return;
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 0);
+		if(Terminal::error_type[0] || Terminal::error_type[2]) return;
 		CPURegister::reg[rt].value = DataMemory::Memory[CPURegister::reg[rs].value+C];
 	}
 	else if(op == "lbu"){
 		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C);
-		if(Terminal::error_type[2]) return;
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 0);
+		if(Terminal::error_type[0] || Terminal::error_type[2]) return;
 		CPURegister::reg[rt].value = (unsigned char)DataMemory::Memory[CPURegister::reg[rs].value+C];
 	}
 	else if(op == "sw"){
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+3, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+3);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 3);
 		DataMisaligned(CPURegister::reg[rs].value+C, 4);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=0; i<4; i++)
 			DataMemory::Memory[CPURegister::reg[rs].value+C+i] = (char)(CPURegister::reg[rt].value >> (8*(3-i)));
 	}	
 	else if(op == "sh"){
-		NumberOverflowDetect(CPURegister::reg[rs].value+C+1, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C+1);
+		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 1);
 		DataMisaligned(CPURegister::reg[rs].value+C, 2);
 		if(Terminal::error_type[2] || Terminal::error_type[3]) return;
 		for(int i=0; i<2; i++)
@@ -161,33 +191,41 @@ void I_format(string op, int rs, int rt, int C){
 	}
 	else if(op == "sb"){
 		NumberOverflowDetect(CPURegister::reg[rs].value+C, CPURegister::reg[rs].value, C);
-		AddressOverflowDetect(CPURegister::reg[rs].value+C);
+		AddressOverflowDetect(CPURegister::reg[rs].value+C, 0);
 		if(Terminal::error_type[2]) return;
 		DataMemory::Memory[CPURegister::reg[rs].value+C] = (char)CPURegister::reg[rt].value;
 	}
 	else if(op == "andi"){
 		unsigned int C2 = C;
+		if(Terminal::error_type[0]) return;
 		CPURegister::reg[rt].value = CPURegister::reg[rs].value & C2;
 	}
 	else if(op == "ori"){
 		unsigned int C2 = C;
+		if(Terminal::error_type[0]) return;
 		CPURegister::reg[rt].value = CPURegister::reg[rs].value | C2;
 	}
 	else if(op == "nori"){
 		unsigned int C2 = C;
-		CPURegister::reg[rt].value = CPURegister::reg[rs].value ^ C2;
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rt].value = ~(CPURegister::reg[rs].value | C2);
 	}
-	else if(op == "slti") CPURegister::reg[rt].value = (CPURegister::reg[rs].value < C);
+	else if(op == "slti"){
+		if(Terminal::error_type[0]) return;
+		CPURegister::reg[rt].value = (CPURegister::reg[rs].value < C);
+	}
 	else if(op == "beq"){ 
 		if(CPURegister::reg[rs].value==CPURegister::reg[rt].value){
-			NumberOverflowDetect(CPURegister::reg[rs].value+4*C+4, CPURegister::reg[rs].value, 4*C);
+			NumberOverflowDetect(CPURegister::PC.value+4, CPURegister::PC.value, 4);
+			NumberOverflowDetect(CPURegister::PC.value+4*C+4, CPURegister::PC.value+4, 4*C);
 			CPURegister::PC.value = CPURegister::PC.value + 4 + 4*C;
 			return;
 		}
 	}
 	else if(op == "bne"){ 
 		if(CPURegister::reg[rs].value!=CPURegister::reg[rt].value){
-			NumberOverflowDetect(CPURegister::reg[rs].value+4*C+4, CPURegister::reg[rs].value, 4*C);
+			NumberOverflowDetect(CPURegister::PC.value+4, CPURegister::PC.value, 4);
+			NumberOverflowDetect(CPURegister::PC.value+4*C+4, CPURegister::PC.value+4, 4*C);
 			CPURegister::PC.value = CPURegister::PC.value + 4 + 4*C;
 			return;
 		}
@@ -202,10 +240,12 @@ void I_format2(string op, int rt, int C){
 		return;
 	}
 	CPURegister::reg[rt].value = C << 16;
+	CPURegister::PC.value += 4;
 }
 
 void I_format3(string op, int rs, int C){
-	NumberOverflowDetect(CPURegister::reg[rs].value+4*C+4, CPURegister::reg[rs].value, 4*C);
+	NumberOverflowDetect(CPURegister::reg[rs].value+4, CPURegister::reg[rs].value, 4);
+	NumberOverflowDetect(CPURegister::reg[rs].value+4*C+4, CPURegister::reg[rs].value+4, 4*C);
 	if(CPURegister::reg[rs].value > 0) CPURegister::PC.value = CPURegister::PC.value + 4 + 4*C;
 }
 
