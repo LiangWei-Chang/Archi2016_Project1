@@ -134,10 +134,12 @@ void Binary2Assembly(int Word){
 			I_format3("bgtz", rs, CalC(Word, true));
 			break;
 		case 2:
-			J_format("j", CalC(Word, false));
+			unsigned int C = (unsigned)(Word << 6) >> 6;
+			J_format("j", C);
 			break;
 		case 3:
-			J_format("jal", CalC(Word, false));
+			unsigned int C = (unsigned)(Word << 6) >> 6;
+			J_format("jal", C);
 			break;
 		case 63:
 			CPURegister::PC.value = 0xFFFF;
