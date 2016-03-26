@@ -13,4 +13,4 @@ Instruction.o: Instruction.cpp GlobalVar.h
 GlobalVar.o: GlobalVar.cpp
 	g++ -c GlobalVar.cpp
 clean:
-	rm -f Processor.o Binary2Assembly.o Register.o Instrucion.o
+	rm -f Processor.o Binary2Assembly.o Register.o Instrucion.o GlobalVar.o
