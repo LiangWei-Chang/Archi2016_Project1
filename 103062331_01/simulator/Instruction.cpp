@@ -244,9 +244,10 @@ void I_format2(string op, int rt, int C){
 }
 
 void I_format3(string op, int rs, int C){
-	NumberOverflowDetect(CPURegister::reg[rs].value+4, CPURegister::reg[rs].value, 4);
-	NumberOverflowDetect(CPURegister::reg[rs].value+4*C+4, CPURegister::reg[rs].value+4, 4*C);
+	NumberOverflowDetect(CPURegister::PC.value+4, CPURegister::PC.value, 4);
+	NumberOverflowDetect(CPURegister::PC.value+4*C+4, CPURegister::PC.value+4, 4*C);
 	if(CPURegister::reg[rs].value > 0) CPURegister::PC.value = CPURegister::PC.value + 4 + 4*C;
+	else CPURegister::PC.value += 4;
 }
 
 void J_format(string op, unsigned int C){

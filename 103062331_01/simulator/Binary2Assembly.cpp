@@ -34,7 +34,8 @@ void Binary2Assembly(int Word){
 	shamt = ((unsigned int) (Word << 21)) >> 27;
 	// Calculate funct
 	funct = ((unsigned int) (Word << 26)) >> 26;
-
+	// Calculate C;
+	C = (Word << 16) >> 16;
 	// Transfer to Assembly
 	switch (opcode){
 		case 0:
@@ -84,7 +85,7 @@ void Binary2Assembly(int Word){
 			I_format("addi", rs, rt, CalC(Word, true));
 			break;
 		case 9:
-			I_format("addiu", rs, rt, CalC(Word, false));
+			I_format("addiu", rs, rt, CalC(Word, true));
 			break;
 		case 35:
 			I_format("lw", rs, rt, CalC(Word, true));
