@@ -34,8 +34,7 @@ void Binary2Assembly(int Word){
 	shamt = ((unsigned int) (Word << 21)) >> 27;
 	// Calculate funct
 	funct = ((unsigned int) (Word << 26)) >> 26;
-	// Calculate C;
-	C = (Word << 16) >> 16;
+	
 	// Transfer to Assembly
 	switch (opcode){
 		case 0:

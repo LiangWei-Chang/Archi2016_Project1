@@ -10,7 +10,6 @@
 
 #include <map>
 #include <vector>
-#include "Register.h"
 
 using namespace std;
 
@@ -21,7 +20,7 @@ public:
 
 class CPURegister{
 public:
-	static Register reg[32], PC;
+	static int reg[32], PC;
 };
 
 class Terminal{

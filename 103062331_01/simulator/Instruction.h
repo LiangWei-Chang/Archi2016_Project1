@@ -8,7 +8,6 @@
 #ifndef Instruction_h
 #define Instruction_h
 
-#include "Register.h"
 #include <string>
 using namespace std;
 

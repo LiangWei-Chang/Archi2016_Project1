@@ -8,7 +8,6 @@
 #ifndef Binary2Assembly_h
 #define Binary2Assembly_h
 
-#include "Register.h"
 #include <vector>
 
 void Binary2Assembly(int Word);
